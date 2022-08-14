@@ -1,3 +1,15 @@
+# Cars
+```
+Cars is a simple dapp marketplace built on the CELO blockchain with transactions are carried out using cUSD. It has the following features:
+users can see uploaded cars and the number of cars availeble for sale
+users can upload their cars
+they can buy uploaded cars
+only owners can delete their uploaded cars but can't buy their uploaded cars
+
+```
+
+Demo: https://dcharles3000.github.io/cars-dapp/
+
 # Install
 
 ```
