@@ -5,7 +5,7 @@ import carAbi from "../contract/car.abi.json"
 import erc20Abi from "../contract/erc20.abi.json"
 
 const ERC20_DECIMALS = 18
-const CarContractAddress = "0xeE72C330fD750b73EDa06464F506d19E1d6FF5b6"
+const CarContractAddress = "0xEba2DcDA6C3F4a741cDEc62dC10772Bf554417D5"
 const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
 let kit
 let contract
@@ -68,7 +68,7 @@ function renderCars() {
     })
   }
   else {
-    document.getElementById("marketplace").innerHTML = "<h2>No cars available at the moment</h2>"
+    document.getElementById("marketplace").innerHTML = "<h3>No cars available at the moment, be the first to upload a car.</h3>"
   }
 }
 
