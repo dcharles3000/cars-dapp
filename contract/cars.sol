@@ -21,17 +21,23 @@ contract Cars {
 
     struct Car {
         address payable owner;
-        string car_name;
-        string car_model;
-        string car_color;
-        string car_image;
-        uint256 car_price;
-        uint256 num_sold;
-        uint256 num_available;
+        string name;
+        string model;
+        string color;
+        string image;
+        uint256 price;
+        uint256 sold;
+        uint256 available;
         bool is_deleted;
     }
 
+    mapping(uint256 => mapping(address => uint256)) boughtCars;
     mapping(uint256 => Car) internal cars;
+
+    modifier onlyOwner(uint256 _index) {
+        require(msg.sender == cars[_index].owner, "Only the owner can acess this functionality");
+        _;
+    }
 
 /*
 Upload Car Function
@@ -71,7 +77,7 @@ Car Image
     it takes an index as its arg to get a particular car
 */
     function carImage(uint256 _index) public view returns (string memory) {
-        return cars[_index].car_image;
+        return cars[_index].image;
     }
 
 /*
@@ -91,12 +97,12 @@ Read Cars
     ) {
         return (
             cars[_index].owner,
-            cars[_index].car_name,
-            cars[_index].car_model,
-            cars[_index].car_color,
-            cars[_index].car_price,
-            cars[_index].num_sold,
-            cars[_index].num_available
+            cars[_index].name,
+            cars[_index].model,
+            cars[_index].color,
+            cars[_index].price,
+            cars[_index].sold,
+            cars[_index].available
         );
     }
     
@@ -110,22 +116,33 @@ Buy Car Function
     to the owner of the car. It returns "transaction failed" if this is transaction is not possible
     it increments the number of cars sold and decreases the number of available cars by 1
 */
-    function buyCar(uint256 _index) public payable  {
-        require(msg.sender != cars[_index].owner, "Owner can't buy their own car");
-        require(cars[_index].num_available > 0, "No cars available for sale");
-        require(!cars[_index].is_deleted, "Sorry but this Car has been deleted");
+    function buyCar(uint256 _index, uint256 _quantity) public payable  {
+        Car storage car = cars[_index];
+        require(msg.sender != car.owner, "Owner can't buy their own car");
+        require(car.available >= _quantity, "Not sufficient car available" );
+        require(!car.is_deleted, "Sorry buy this Car has been deleted");
         require(
           IERC20Token(cUsdTokenAddress).transferFrom(
             msg.sender,
-            cars[_index].owner,
-            cars[_index].car_price
+            car.owner,
+            car.price * _quantity
           ),
           "Transfer failed."
         );
-        cars[_index].num_sold++;
-        if(cars[_index].num_available > 0){
-            cars[_index].num_available--;
-        }
+        cars[_index].sold += _quantity;
+        cars[_index].available -= _quantity;
+        boughtCars[_index][msg.sender] += _quantity;
+    }
+
+/*
+ReturnCar
+    User returns the product to the owner
+*/
+
+    function returnCar(uint256 _index, uint256 _quantity) public {
+        require(boughtCars[_index][msg.sender] >= _quantity, "You can only return cars you bought");
+        cars[_index].available += _quantity;
+        boughtCars[_index][msg.sender] -= _quantity;
     }
 
 /*
@@ -134,9 +151,24 @@ Delete Car
     it is not a true delete but it changes the is_deleted property of the car to true
     hence making the car unavailable for purchase
 */
-    function deleteCar(uint256 _index) public {
-        require(msg.sender == cars[_index].owner, "Invalid owner");
+    function deleteCar(uint256 _index) public onlyOwner(_index) {
         cars[_index].is_deleted = true;
+    }
+
+/*
+Change price
+    Changes the price of the car
+*/
+    function changePrice(uint256 _index, uint256 _price) public onlyOwner(_index){
+        cars[_index].price = _price;
+    }
+
+/*
+Add stock
+    Adds to the inventory
+*/
+    function addStock(uint256 _index, uint256 _cars) public onlyOwner(_index){
+        cars[_index].available += _cars;
     }
 
 /*
